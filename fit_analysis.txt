@@ -1,0 +1,20 @@
+=== MAIN SECTIONS ===
+profileVersion, protocolVersion, activity, workout, hr_zone, power_zone, dive_gases, course_points, sports, monitors, stress, file_ids, monitor_info, definitions, tank_updates, tank_summaries, jumps, time_in_zone, activity_metrics, sessions, laps, lengths, records, events, device_infos, developer_data_ids, field_descriptions, hrv
+
+=== RECORDS (Count: 1648) ===
+altitude, cadence, distance, elapsed_time, grade, heart_rate, power, speed, timer_time, timestamp
+
+=== SESSIONS (Count: 1) ===
+avg_cadence, avg_grade, avg_heart_rate, avg_power, avg_speed, event, event_type, laps, max_altitude, max_cadence, max_heart_rate, max_neg_grade, max_pos_grade, max_power, max_speed, min_heart_rate, normalized_power, num_laps, sport, start_time, sub_sport, time_in_hr_zone, time_in_power_zone, timestamp, total_ascent, total_calories, total_descent, total_distance, total_elapsed_time, total_moving_time, total_timer_time, total_work
+
+=== LAPS (Count: 1) ===
+avg_cadence, avg_grade, avg_heart_rate, avg_power, avg_speed, event, event_type, lap_trigger, lengths, max_heart_rate, max_neg_grade, max_pos_grade, max_power, max_speed, records, sport, start_time, sub_sport, time_in_hr_zone, time_in_power_zone, timestamp, total_ascent, total_distance, total_elapsed_time, total_moving_time, total_timer_time, total_work
+
+=== EVENTS (Count: 2) ===
+event, event_group, event_type, timestamp
+
+=== FILE_IDS (Count: 1) ===
+manufacturer, product, time_created, type
+
+=== SPORTS (Count: 1) ===
+sport, sub_sport
