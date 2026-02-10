@@ -11,20 +11,77 @@ import {
 } from 'recharts';
 import { Activity, Zap, Heart, Wind, Layers } from 'lucide-react';
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, powerZones, hrZones }) => {
     if (active && payload && payload.length) {
+        // Helper to find zone for a value
+        const getZone = (value, type) => {
+            if (!value) return null;
+            const zones = type === 'power' ? powerZones : hrZones;
+            if (!zones) return null;
+
+            // Find the zone where value <= max
+            // Zones are ordered from Z1 to Zmax
+            for (let i = 0; i < zones.length; i++) {
+                if (value <= zones[i].max) {
+                    return zones[i]; // Return the whole zone object
+                }
+            }
+            // If value is higher than max of last zone, it's presumably in the highest zone or above
+            return zones[zones.length - 1];
+        };
+
+        // Helper to format time
+        const formatTime = (seconds) => {
+            const s = parseInt(seconds, 10);
+            if (s < 60) return `${s}s`;
+
+            const hours = Math.floor(s / 3600);
+            const minutes = Math.floor((s % 3600) / 60);
+            const remainingSeconds = s % 60;
+
+            if (hours > 0) {
+                return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+            }
+            return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+        };
+
+        // Helper to format value
+        const formatValue = (value, name) => {
+            if (name === 'Speed' && typeof value === 'number') {
+                return value.toFixed(2);
+            }
+            return value;
+        };
+
         return (
             <div className="bg-card/90 backdrop-blur-md border border-white/10 p-4 rounded-lg shadow-xl text-sm leading-relaxed">
-                <p className="text-white/60 mb-2">{`Time: ${label}s`}</p>
-                {payload.map((entry, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                        <span className="text-white/80 font-medium min-w-[80px]">{entry.name}:</span>
-                        <span className="font-bold text-white">
-                            {entry.value} <span className="text-white/40 text-xs font-normal ml-1">{entry.unit}</span>
-                        </span>
-                    </div>
-                ))}
+                <p className="text-white/60 mb-2">{`Time: ${formatTime(label)}`}</p>
+                {payload.map((entry, index) => {
+                    let zone = null;
+                    if (entry.name === 'Power' && powerZones) {
+                        zone = getZone(entry.value, 'power');
+                    } else if (entry.name === 'Heart Rate' && hrZones) {
+                        zone = getZone(entry.value, 'heartRate');
+                    }
+
+                    return (
+                        <div key={index} className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                            <span className="text-white/80 font-medium min-w-[80px]">{entry.name}:</span>
+                            <span className="font-bold text-white">
+                                {formatValue(entry.value, entry.name)} <span className="text-white/40 text-xs font-normal ml-1">{entry.unit}</span>
+                                {zone && (
+                                    <span
+                                        className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded text-white shadow-sm"
+                                        style={{ backgroundColor: `${zone.fill}cc` }}
+                                    >
+                                        {zone.label}
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+                    );
+                })}
             </div>
         );
     }
@@ -170,7 +227,7 @@ const SyncCharts = ({ data, ftp = 250, maxHr = 190, restingHr = 60, hrMethod = '
                                 tickFormatter={(val) => Math.floor(val / 60)}
                                 label={{ value: 'Minutes', position: 'insideBottomRight', offset: -10, fill: '#ffffff40', fontSize: 10 }}
                             />
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<CustomTooltip powerZones={powerZones} hrZones={hrZones} />} />
 
                             {/* Y Axes Configuration */}
                             {visibleMetrics.power && (
