@@ -47,3 +47,21 @@ Aplikasi mendukung data dari file FIT yang berisi:
 ## Konfigurasi FTP
 
 FTP dapat dikonfigurasi melalui settings untuk perhitungan zone power yang akurat.
+
+
+## Konfigurasi Heart Rate Zones
+
+Aplikasi mendukung dua metode perhitungan zona detak jantung (Heart Rate):
+
+1.  **Standard (Max HR)**:
+    -   Dihitung berdasarkan usia pengguna (Rumus: `220 - Usia`).
+    -   Zona ditentukan sebagai persentase dari Max HR.
+
+2.  **Karvonen (Heart Rate Reserve)**:
+    -   Mempertimbangkan Resting Heart Rate (RHR).
+    -   Rumus: `Target HR = ((Max HR - Resting HR) × %Intensity) + Resting HR`.
+    -   Lebih akurat untuk individu dengan tingkat kebugaran yang bervariasi.
+
+Fitur tambahan:
+-   **Zone Info**: Klik tombol (i) di header untuk melihat rentang BPM spesifik untuk setiap zona dan manfaat fisiologisnya (misal: "Endurance & Fat Burn").
+-   **Visualisasi Zona**: Aktifkan "Show Zones" pada chart untuk melihat overlay warna zona beserta legendanya.
