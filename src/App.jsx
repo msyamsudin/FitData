@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Bike, Share2, Info, History, Trash2, ChevronRight, BarChart2, Layout, ArrowLeft, Zap, CheckSquare, Square, CheckSquare2 } from 'lucide-react';
+import { Upload, Bike, Share2, Info, History, Trash2, ChevronRight, BarChart2, Layout, ArrowLeft, Zap, CheckSquare, Square, CheckSquare2, Heart } from 'lucide-react';
 import { parseFitFile } from './utils/fitParser';
 import { saveActivity, getActivities, deleteActivity } from './utils/db';
 import MetricDashboard from './components/MetricDashboard';
@@ -20,6 +20,44 @@ function App() {
   const [ftp, setFtp] = useState(() => {
     return Number(localStorage.getItem('user_ftp')) || 250;
   });
+  const [age, setAge] = useState(() => {
+    return Number(localStorage.getItem('user_age')) || 30;
+  });
+
+  const [restingHr, setRestingHr] = useState(() => {
+    return Number(localStorage.getItem('user_resting_hr')) || 60;
+  });
+  const [hrMethod, setHrMethod] = useState(() => {
+    return localStorage.getItem('user_hr_method') || 'standard'; // 'standard' or 'karvonen'
+  });
+  const [showZoneInfo, setShowZoneInfo] = useState(false);
+
+  // Calculate maxHr based on age
+  const maxHr = 220 - age;
+
+  const calculateZoneLimits = (percentage) => {
+    if (hrMethod === 'karvonen') {
+      return Math.round(((maxHr - restingHr) * percentage) + restingHr);
+    }
+    return Math.round(maxHr * percentage);
+  };
+
+  const currentZones = [
+    { name: 'Zone 1', range: `${hrMethod === 'karvonen' ? restingHr : Math.round(maxHr * 0.5)} - ${calculateZoneLimits(0.60)}`, desc: 'Very Light', benefit: 'Recovery & Warm-up' },
+    { name: 'Zone 2', range: `${calculateZoneLimits(0.60) + 1} - ${calculateZoneLimits(0.70)}`, desc: 'Light', benefit: 'Endurance & Fat Burn' },
+    { name: 'Zone 3', range: `${calculateZoneLimits(0.70) + 1} - ${calculateZoneLimits(0.80)}`, desc: 'Moderate', benefit: 'Aerobic Fitness' },
+    { name: 'Zone 4', range: `${calculateZoneLimits(0.80) + 1} - ${calculateZoneLimits(0.90)}`, desc: 'Hard', benefit: 'Anaerobic Capacity' },
+    { name: 'Zone 5', range: `${calculateZoneLimits(0.90) + 1} - ${maxHr}`, desc: 'Maximum', benefit: 'Max Power & Speed' },
+  ];
+
+  // Update localStorage whenever age changes (though not strictly necessary as we derive maxHr on the fly, 
+  // but good to keep consistency if other components read it)
+  useEffect(() => {
+    localStorage.setItem('user_age', age);
+    localStorage.setItem('user_max_hr', maxHr);
+    localStorage.setItem('user_resting_hr', restingHr);
+    localStorage.setItem('user_hr_method', hrMethod);
+  }, [age, maxHr, restingHr, hrMethod]);
 
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, activityIds: [] });
   const [selectedIds, setSelectedIds] = useState([]);
@@ -228,6 +266,93 @@ function App() {
               </div>
               <span className="text-[10px] font-bold text-white/20">W</span>
             </div>
+
+            {/* Age Settings & Max HR Display */}
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+              <Heart className="w-4 h-4 text-danger" />
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-white/20 uppercase leading-none mb-0.5">Age</span>
+                <input
+                  type="number"
+                  value={age}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val > 0 && val < 120) {
+                      setAge(val);
+                    }
+                  }}
+                  className="bg-transparent border-none text-xs font-bold text-white w-8 p-0 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <div className="h-6 w-px bg-white/10 mx-1"></div>
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-white/20 uppercase leading-none mb-0.5">Max HR</span>
+                <span className="text-xs font-bold text-white/60">{maxHr} <span className="text-[8px] text-white/20">bpm</span></span>
+              </div>
+            </div>
+
+            {/* HR Method Toggle & Resting HR */}
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+              <button
+                onClick={() => setHrMethod(prev => prev === 'standard' ? 'karvonen' : 'standard')}
+                className="flex flex-col items-start text-left group"
+              >
+                <span className="text-[8px] font-black text-white/20 uppercase leading-none mb-0.5 group-hover:text-accent transition-colors">Method</span>
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider">{hrMethod === 'standard' ? 'Max HR' : 'Karvonen'}</span>
+              </button>
+
+              {hrMethod === 'karvonen' && (
+                <>
+                  <div className="h-6 w-px bg-white/10 mx-1"></div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-white/20 uppercase leading-none mb-0.5">Rest HR</span>
+                    <input
+                      type="number"
+                      value={restingHr}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val > 0 && val < maxHr) {
+                          setRestingHr(val);
+                        }
+                      }}
+                      className="bg-transparent border-none text-xs font-bold text-white w-8 p-0 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+            {/* Zone Info Button */}
+            <div className="relative">
+              <button
+                onClick={() => setShowZoneInfo(!showZoneInfo)}
+                className={`flex items-center justify-center w-10 h-10 rounded-full border transition-all ${showZoneInfo ? 'bg-accent text-black border-accent' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'}`}
+              >
+                <Info className="w-5 h-5" />
+              </button>
+
+              {showZoneInfo && (
+                <div className="absolute top-full right-0 mt-4 w-64 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xs font-black text-white uppercase tracking-widest">Zone Ranges</h3>
+                    <span className="text-[10px] font-bold text-white/40 uppercase">{hrMethod === 'karvonen' ? 'Karvonen' : 'Standard'}</span>
+                  </div>
+                  <div className="space-y-4">
+                    {currentZones.map((zone) => (
+                      <div key={zone.name} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                        <div className="flex justify-between items-center text-xs">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-white/60">{zone.name}</span>
+                            <span className="text-[10px] text-white/20 uppercase">{zone.desc}</span>
+                          </div>
+                          <span className="font-bold text-white font-mono">{zone.range} <span className="text-[8px] text-white/20 font-sans">bpm</span></span>
+                        </div>
+                        <span className="text-[10px] text-accent/60 italic leading-tight">{zone.benefit}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -415,7 +540,7 @@ function App() {
               <span className="text-xs font-bold uppercase tracking-widest">Back to Gallery</span>
             </button>
             <MetricDashboard summary={data.summary} powerZones={data.powerZones} />
-            <SyncCharts data={data.records} />
+            <SyncCharts data={data.records} ftp={ftp} maxHr={maxHr} restingHr={restingHr} hrMethod={hrMethod} />
           </div>
         )}
 
