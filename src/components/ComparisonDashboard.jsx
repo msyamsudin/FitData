@@ -116,26 +116,7 @@ const ComparisonDashboard = ({ history }) => {
                 </div>
             </div>
 
-            {/* Global Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6" data-screenshot-id="summary">
-                {[
-                    { label: 'Total Sessions', value: stats.count, icon: Calendar, color: 'text-accent' },
-                    { label: 'Total Distance', value: `${stats.totalDistance.toFixed(1)} km`, icon: TrendingUp, color: 'text-success' },
-                    { label: 'Total Energy', value: `${stats.totalCalories.toLocaleString()} kcal`, icon: Zap, color: 'text-orange-500' },
-                    { label: 'Avg Power', value: `${Math.round(stats.avgPower)} W`, icon: Activity, color: 'text-blue-400' },
-                    { label: 'Current FTP', value: `${stats.chartData[stats.chartData.length - 1]?.ftp || 0} W`, icon: Zap, color: 'text-warning' }
-                ].map((item, i) => (
-                    <div key={i} className="glass-card p-6 flex items-center justify-between group hover:border-white/20 transition-all">
-                        <div>
-                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-1 font-brand">{item.label}</p>
-                            <h3 className="text-2xl font-black tracking-tighter">{item.value}</h3>
-                        </div>
-                        <div className={`p-3 rounded-xl bg-white/5 ${item.color} group-hover:scale-110 transition-transform duration-500`}>
-                            <item.icon className="w-6 h-6" />
-                        </div>
-                    </div>
-                ))}
-            </div>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Performance Trend Chart */}
