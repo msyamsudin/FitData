@@ -37,6 +37,17 @@ const MetricDashboard = ({ summary, powerZones }) => {
         return `${hrs > 0 ? hrs + ':' : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const formatZoneTime = (seconds) => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        if (hrs > 0) {
+            return `${hrs}h ${mins}m ${secs}s`;
+        }
+        return `${mins}m ${secs}s`;
+    };
+
     const enhancedPowerZones = (powerZones || []).map(zone => {
         const info = ZONE_INFO[zone.name];
         const minW = Math.round(info.range[0] * ftp);
@@ -69,7 +80,7 @@ const MetricDashboard = ({ summary, powerZones }) => {
                     <div className="flex justify-between items-center">
                         <div className="space-y-1">
                             <h3 className="text-lg font-bold tracking-tight">Power Zone Distribution</h3>
-                            <p className="text-white/40 text-[10px] uppercase font-medium tracking-widest">Time in Zones (Sec)</p>
+                            <p className="text-white/40 text-[10px] uppercase font-medium tracking-widest">Time in Zones</p>
                         </div>
                     </div>
                     <div className="h-[300px]">
@@ -95,7 +106,7 @@ const MetricDashboard = ({ summary, powerZones }) => {
                                     labelStyle={{ fontWeight: 'black', color: '#fff', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                                     itemStyle={{ fontSize: '12px' }}
                                     formatter={(value, name, props) => [
-                                        <span className="font-bold text-white">{value}s</span>,
+                                        <span className="font-bold text-white">{formatZoneTime(value)}</span>,
                                         <span className="text-white/40">{props.payload.label}</span>
                                     ]}
                                 />
